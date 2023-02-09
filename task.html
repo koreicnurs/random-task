@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <link rel="stylesheet" href="style.css">
+  <title>Document</title>
+  <script src="request.js"></script>
+</head>
+<body>
+
+  <p class="text-random">Get random task</p>
+
+  <select class="form-select" aria-label="Default select example">
+    <option value="random" selected>random</option>
+    <option value="education">education</option>
+    <option value="recreational">recreational</option>
+    <option value="social">social</option>
+    <option value="diy">diy</option>
+    <option value="charity">charity</option>
+    <option value="cooking">cooking</option>
+    <option value="relaxation">relaxation</option>
+    <option value="music">music</option>
+    <option value="busywork">busywork</option>
+  </select>
+  <button type="submit" class="btn btn-primary btn-select">Get</button>
+  <div class="total"></div>
+  <div class="done"></div>
+  <script>
+    let todo = [];
+
+    let done = [];
+
+    let points = 0;
+    
+    const submitBtn = document.querySelector('.btn-select');
+    const select = document.querySelector('.form-select');
+    const total = document.querySelector('.total');
+              
+
+    submitBtn.addEventListener('click', () => {
+      if (select.value === 'random') {
+          request({
+            method: 'GET',
+            url: 'http://www.boredapi.com/api/activity/',
+            success: response => {
+              const selectedObj = response;
+              let divBlock = `
+              <div class='block-task'>
+                <div class='category'>Category: ${selectedObj.type}</div>
+                <div class='category'>Task: ${selectedObj.activity}</div>
+                <button id="btn-done" class='btn btn-primary'>Done</button>
+                <button id="btn-cancel" class='btn btn-primary'>Cancel</button>
+              </div>
+              `;      
+              document.body.insertAdjacentHTML("beforeend", divBlock);          
+            },
+            error: message => {
+              console.log(`Error! ${message}`);
+            }
+          });
+      } else {
+        request({
+            method: 'GET',
+            url: 'http://www.boredapi.com/api/activity?type=' + select.value,
+            success: response => {
+              const selectedObj = response;
+              let divBlock = `
+              <div class='block-task'>
+                <div class='category'>Category: ${selectedObj.type}</div>
+                <div class='category'>Task: ${selectedObj.activity}</div>
+                <button id="btn-done" class='btn btn-primary'>Done</button>
+                <button id="btn-cancel" class='btn btn-primary btn-cancel'>Cancel</button>
+              </div>
+              `;      
+              document.body.insertAdjacentHTML("beforeend", divBlock);
+
+              todo.push(selectedObj);
+              console.log(todo);
+              
+              document.querySelectorAll('#btn-cancel').forEach(btn => btn.addEventListener('click', clickRemove));
+              
+              document.querySelectorAll('#btn-done').forEach(b => b.addEventListener('click', clickDone));
+
+              localStorage.setItem('todo', JSON.stringify(todo))
+            },
+            
+            error: message => {
+              console.log(`Error! ${message}`);
+            }
+          });
+      }
+    })
+
+
+    const clickRemove = function (e) {
+      e.preventDefault();
+      document.body.removeChild(e.target.parentNode);
+      todo.forEach(e => {
+        // const index = todo.findIndex(t => t.key === e.key[0])
+        // todo.splice(index, 1)
+        console.log(e.key)
+      })
+      // const removePost = function ()  {
+      //   console.log(id)
+      //   users = users.filter(user => user.id !== id);
+      // }
+      localStorage.clear()
+    }
+    const clickDone = function () {
+      const doneBlock = document.querySelector('.done');
+      const block = document.getElementsByClassName('block-task');
+      doneBlock.insertAdjacentHTML("beforeend", block);
+      points++
+      total.innerHTML = `Your points: ${points}`
+    }
+    // const addUser = function () {
+    //   let id = 1;
+
+    //   if (users.length === 0) {
+    //     users.push({id, name: select.value, date: date.value, userText: userText.value})
+    //   } else {
+    //     const lastarray = users[users.length - 1];
+    //     id = lastarray.id + 1;
+
+    //     users.push({id,  name: select.value, date: date.value, userText: userText.value})
+    //   }
+    // };
+    
+    // const removePost = function (id)  {
+    //   console.log(id)
+    //   users = users.filter(user => user.id !== id);
+    // }
+
+    
+  </script>
+</body>
+</html>
